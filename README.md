@@ -23,5 +23,3 @@ npm install
 npm run app:dev     # ejecutar en modo desarrollo
 npm run app:build   # generar el instalador (.exe)
 ```
-
-Más detalles técnicos en [CLAUDE.md](CLAUDE.md).
