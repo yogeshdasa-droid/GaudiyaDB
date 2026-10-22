@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gaudiya Database</title>
+    <!-- Splash: plain HTML/CSS so it paints before the app bundle loads. -->
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-items: center;
+        background: #f4f1ec;
+        color: #1f1b16;
+        font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+        transition: opacity 0.35s ease;
+      }
+      html.dark #splash {
+        background: #0e0e12;
+        color: #ece8e1;
+      }
+      #splash.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #splash .box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        animation: splash-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      #splash .logo {
+        width: 76px;
+        height: 76px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font: 700 44px Georgia, serif;
+        background: linear-gradient(135deg, #f59e4b 0%, #e0701f 45%, #b8380c 100%);
+        box-shadow: 0 14px 40px rgba(224, 112, 31, 0.35);
+      }
+      #splash .name {
+        font-size: 19px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      #splash .bar {
+        position: relative;
+        width: 140px;
+        height: 3px;
+        border-radius: 3px;
+        overflow: hidden;
+        background: rgba(128, 128, 128, 0.2);
+      }
+      #splash .bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #f59e4b, #e0701f);
+        animation: splash-slide 1s ease-in-out infinite;
+      }
+      @keyframes splash-in {
+        from {
+          opacity: 0;
+          transform: scale(0.94);
+        }
+      }
+      @keyframes splash-slide {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
+    </style>
+    <script>
+      // Apply the saved theme before the first paint, then reveal the
+      // (initially hidden) window once the splash is on screen.
+      (function () {
+        var theme = "system";
+        try {
+          theme = JSON.parse(localStorage.getItem("wdb.theme") || '"system"');
+        } catch (e) {}
+        var dark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.classList.add("dark");
+        if (theme !== "system") document.documentElement.setAttribute("data-theme", theme);
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            var t = window.__TAURI_INTERNALS__;
+            if (t) t.invoke("plugin:window|show", { label: "main" }).catch(function () {});
+          });
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="splash">
+      <div class="box">
+        <div class="logo">G</div>
+        <div class="name">Gaudiya Database</div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

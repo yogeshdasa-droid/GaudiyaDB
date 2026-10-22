@@ -1,21 +1,27 @@
-# W-DataBase
+# Gaudiya Database
 
-Repositorio de la base de datos del proyecto **Whispers**.
+Aplicación de escritorio para Windows que busca **al instante** en una biblioteca de
+textos (bóvedas de Obsidian `.md` / `.txt`, y también `.pdf`, `.docx` y `.html`).
+Inspirada en VedaBase, pero moderna.
 
-## Contenido
+## Qué hace
+- **Búsqueda sin diacríticos**: `uvaca` encuentra *uvāca*; `krishna` encuentra *Kṛṣṇa*, *Krsna*.
+- **Frase exacta** entre comillas (`"jaiva dharma"`), prefijos (`vrinda*`), exclusión (`-maya`), `OR`.
+- Resultados en milisegundos (SQLite FTS5), con fragmentos resaltados, filtros por colección
+  y año, y orden por relevancia, fecha o título.
+- Lector con navegación entre coincidencias, índice de secciones, marcadores con notas,
+  enlaces e imágenes de Obsidian.
+- Varias bibliotecas (carpetas), importar archivos arrastrándolos, editar texto y metadatos,
+  quitar del índice o mandar a la papelera.
+- Interfaz en **español e inglés**, tema claro y oscuro.
 
-> Este repositorio está recién creado. Aquí se irá documentando la estructura de la base de datos, los esquemas y los scripts a medida que se añadan.
+## Desarrollo
+Requisitos: Node.js 20+, Rust (stable, MSVC) y las herramientas de C++ de Visual Studio.
 
-## Cómo empezar
-
-```bash
-git clone https://github.com/yogeshdasa-droid/W-Data-Base.git
-cd W-Data-Base
+```powershell
+npm install
+npm run app:dev     # ejecutar en modo desarrollo
+npm run app:build   # generar el instalador (.exe)
 ```
 
-## Estructura
-
-```
-W-DataBase/
-└── README.md
-```
+Más detalles técnicos en [CLAUDE.md](CLAUDE.md).

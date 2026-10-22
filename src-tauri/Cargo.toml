@@ -1,0 +1,39 @@
+[package]
+name = "w-database"
+version = "0.1.0"
+description = "Gaudiya Database: biblioteca de búsqueda rápida"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+walkdir = "2"
+rayon = "1"
+regex = "1"
+unicode-normalization = "0.1"
+encoding_rs = "0.8"
+trash = "5"
+pdf-extract = "0.12"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true
+
+# Dependencies (tauri, sqlite...) optimized even in `tauri dev`, so debug
+# builds stay fast to run while only our crate is recompiled.
+[profile.dev.package."*"]
+opt-level = 2
+
+# Our own crate: light optimization keeps indexing fast during development
+# while rebuilds stay at a few seconds.
+[profile.dev]
+opt-level = 1
