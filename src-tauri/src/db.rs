@@ -109,7 +109,25 @@ fn has_column(conn: &Connection, table: &str, col: &str) -> rusqlite::Result<boo
     Ok(names.iter().any(|n| n == col))
 }
 
-pub fn init(conn: &Connection) -> rusqlite::Result<()> {
+/// Prepares the database. Refuses a database written by a *newer* version of
+/// the app instead of wiping its index (an old .exe once did exactly that).
+pub fn init(conn: &Connection) -> Result<(), String> {
+    conn.execute_batch("CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL);")
+        .map_err(|e| e.to_string())?;
+    let stored: Option<u32> = get_meta(conn, "schema").map_err(|e| e.to_string())?.and_then(|v| v.parse().ok());
+    let current: u32 = SCHEMA_VERSION.parse().unwrap();
+    if stored.is_some_and(|s| s > current) {
+        return Err(format!(
+            "Esta base de datos es de una versión más nueva de Gaudiya Database (formato {}, este programa usa {}).\n\
+             Abre la versión más reciente del programa.",
+            stored.unwrap(),
+            current
+        ));
+    }
+    init_schema(conn).map_err(|e| e.to_string())
+}
+
+fn init_schema(conn: &Connection) -> rusqlite::Result<()> {
     conn.execute_batch(USER_SCHEMA)?;
     // v1 → v2: bookmarks gain library_id; the single library setting becomes a row.
     if !has_column(conn, "bookmarks", "library_id")? {

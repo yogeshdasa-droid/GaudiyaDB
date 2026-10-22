@@ -1,6 +1,6 @@
 [package]
 name = "w-database"
-version = "0.1.0"
+version = "0.2.0"
 description = "Gaudiya Database: biblioteca de búsqueda rápida"
 edition = "2021"
 

@@ -24,6 +24,8 @@ struct AppState {
     indexing: Arc<AtomicBool>,
     /// set when a re-index was requested while another one was running
     rerun: Arc<AtomicBool>,
+    /// the database could not be opened (e.g. it belongs to a newer version)
+    startup_error: Option<String>,
 }
 
 type CmdResult<T> = Result<T, String>;
@@ -46,6 +48,9 @@ struct Status {
 
 #[tauri::command]
 async fn get_status(state: State<'_, AppState>) -> CmdResult<Status> {
+    if let Some(e) = &state.startup_error {
+        return Err(e.clone());
+    }
     let conn = state.conn.lock().unwrap();
     let count = |sql: &str| conn.query_row(sql, [], |r| r.get::<_, i64>(0)).unwrap_or(0);
     Ok(Status {
@@ -68,6 +73,9 @@ fn allow_assets(app: &AppHandle, conn: &Connection) {
 
 fn start_indexing(app: &AppHandle, full: bool) {
     let state = app.state::<AppState>();
+    if state.startup_error.is_some() {
+        return;
+    }
     if state.indexing.swap(true, Ordering::SeqCst) {
         state.rerun.store(true, Ordering::SeqCst);
         return;
@@ -284,18 +292,23 @@ fn main() {
             std::fs::create_dir_all(&dir)?;
             let db_path = dir.join("library.db");
             let conn = db::open(&db_path)?;
-            db::init(&conn)?;
-            if db::libraries(&conn)?.is_empty() && Path::new(DEFAULT_LIBRARY).is_dir() {
+            // A database problem is shown in the window instead of closing silently.
+            let startup_error = db::init(&conn).err();
+            if startup_error.is_none() && db::libraries(&conn)?.is_empty() && Path::new(DEFAULT_LIBRARY).is_dir() {
                 let _ = edit::add_library(&conn, DEFAULT_LIBRARY, None);
             }
+            let ok = startup_error.is_none();
             app.manage(AppState {
                 db_path,
                 conn: Mutex::new(conn),
                 indexing: Arc::new(AtomicBool::new(false)),
                 rerun: Arc::new(AtomicBool::new(false)),
+                startup_error,
             });
             // Pick up changes made in Obsidian since the last run.
-            start_indexing(app.handle(), false);
+            if ok {
+                start_indexing(app.handle(), false);
+            }
             // The window starts hidden and the page shows it once the splash
             // is painted; this is only a safety net if that never happens.
             let handle = app.handle().clone();

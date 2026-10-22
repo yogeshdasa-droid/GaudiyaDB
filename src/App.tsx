@@ -155,7 +155,19 @@ export default function App() {
   }, [status]);
 
   // ---- data refresh
-  const refreshStatus = useCallback(() => api.status().then((s) => (setStatus(s), s)), []);
+  const [fatal, setFatal] = useState<string | null>(null);
+  const refreshStatus = useCallback(
+    () =>
+      api
+        .status()
+        .then((s) => (setStatus(s), s))
+        .catch((e) => {
+          setFatal(String(e));
+          document.getElementById("splash")?.remove();
+          return null;
+        }),
+    [],
+  );
   const refreshAll = useCallback(() => {
     refreshStatus();
     api.listDocs().then(setDocs);
@@ -554,6 +566,15 @@ export default function App() {
     gridTemplateColumns: `${sideOpen ? `${sideW}px 5px ` : ""}${resultsOpen ? `${resW}px 5px ` : ""}minmax(360px, 1fr)`,
   } as React.CSSProperties;
 
+  if (fatal) {
+    return (
+      <div className="empty-state" style={{ height: "100%", justifyContent: "center" }}>
+        <h2>Gaudiya Database</h2>
+        <p style={{ whiteSpace: "pre-wrap", maxWidth: 520 }}>{fatal}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -717,6 +738,12 @@ export default function App() {
         {status && (
           <span>
             {t.documents(status.docs)} · {t.sections(status.sections)}
+          </span>
+        )}
+        {!progress && status?.indexing && (
+          <span className="progress">
+            <span className="spinner" />
+            {t.scanning}
           </span>
         )}
         {progress && (

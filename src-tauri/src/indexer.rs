@@ -213,7 +213,7 @@ pub fn refresh_paths(conn: &mut Connection, library_id: i64, rels: &[String]) ->
 pub fn run(db_path: &Path, full: bool, progress: impl Fn(Progress)) -> Result<Summary, String> {
     let started = std::time::Instant::now();
     let mut conn = db::open(db_path).map_err(|e| e.to_string())?;
-    db::init(&conn).map_err(|e| e.to_string())?;
+    db::init(&conn)?;
     if full {
         db::clear_index(&conn).map_err(|e| e.to_string())?;
     }

@@ -4570,7 +4570,7 @@ dependencies = [
 
 [[package]]
 name = "w-database"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "encoding_rs",
  "pdf-extract",
